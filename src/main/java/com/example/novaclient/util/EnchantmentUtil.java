@@ -5,7 +5,6 @@ import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 
 public class EnchantmentUtil {
@@ -17,10 +16,9 @@ public class EnchantmentUtil {
         if (enchantments == null) return false;
 
         return world.getRegistryManager()
-                .getOrThrow(enchantmentKey.getRegistryRef())
-                .getOptional(enchantmentKey.getValue())
-                .map(RegistryEntry::registryKey)
-                .map(key -> enchantments.getEnchantments().containsKey(key))
+                .getOptional(enchantmentKey.getRegistryRef())
+                .flatMap(registry -> registry.getOptional(enchantmentKey.getValue()))
+                .map(entry -> enchantments.getLevel(entry) > 0)
                 .orElse(false);
     }
 
@@ -31,8 +29,8 @@ public class EnchantmentUtil {
         if (enchantments == null) return 0;
 
         return world.getRegistryManager()
-                .getOrThrow(enchantmentKey.getRegistryRef())
-                .getOptional(enchantmentKey.getValue())
+                .getOptional(enchantmentKey.getRegistryRef())
+                .flatMap(registry -> registry.getOptional(enchantmentKey.getValue()))
                 .map(entry -> enchantments.getLevel(entry))
                 .orElse(0);
     }
